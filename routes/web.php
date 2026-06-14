@@ -1,33 +1,34 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\{ProfileController, PlayerController, ResultController};
 use Illuminate\Support\Facades\Route;
 
-// --- 公開エリア ---
-Route::get('/', function () {
-    return view('welcome');
-});
+/**
+ * ゲスト用ルーティング
+ */
+Route::get('/', fn() => view('welcome'));
 
-// --- 認証済みエリア ---
+/**
+ * 認証済みユーザー用ルーティング
+ */
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // ダッシュボード
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
 
-    // プロフィール管理
+    // プロフィール管理（Breeze標準仕様に準拠するため個別定義）
     Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
         Route::get('/', 'edit')->name('edit');
         Route::patch('/', 'update')->name('update');
         Route::delete('/', 'destroy')->name('destroy');
     });
-
-    // 対局者管理 (リソースフルルーティング)
-    // index, create, store, show, edit, update, destroy が自動生成されます
+    
+    // 対局者管理 CRUD
     Route::resource('players', PlayerController::class);
+    
+    // 対局結果管理 CRUD
+    Route::resource('results', ResultController::class);
 });
 
-// 認証系ルートの読み込み
+// 認証関連（ログイン、登録等）
 require __DIR__.'/auth.php';
